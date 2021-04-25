@@ -22,13 +22,15 @@ class EpsilonGreedy:
         # Container for the number of plays of each bandit
         self.counts = [0] * len(bandits)
 
-    def run(self, total_steps=1000):
+        # Internally track the number of steps run
+        self.num_steps = 0
+
+    def run(self, num_steps=10000):
         """ 
         Run the epsilon-greedy algorithm
         """
-        step = 0
         total_rewards = 0
-        while step < total_steps:
+        for _ in range(num_steps):
             p = random.random()
             if p < self.epsilon:
                 # Exploration. Select a random bandit.
@@ -44,7 +46,7 @@ class EpsilonGreedy:
             # Update sample mean
             self._update_means(j, reward)
 
-            step += 1
+            self.num_steps += 1
 
         return total_rewards
 
@@ -91,29 +93,33 @@ if __name__ == "__main__":
     algo = EpsilonGreedy(bandits)
 
     # Run 10 times
-    rewards = algo.run(total_steps=10)
+    rewards = algo.run(num_steps=10)
     count, i = algo.recommend_bandit()
-    print("Total rewards is {} after {} steps".format(rewards, 10))
-    print("Bandit {} is played {} times after {} steps".format(i, count, 10))
+    print("Total rewards is {} after {} steps".format(rewards, algo.num_steps))
+    print("Bandit {} is played {} times after {} steps".format(
+        i, count, algo.num_steps))
     print('')
 
     # Run 100 times
-    rewards = algo.run(total_steps=90)
+    rewards = algo.run(num_steps=90)
     count, i = algo.recommend_bandit()
-    print("Total rewards is {} after {} steps".format(rewards, 100))
-    print("Bandit {} is played {} times after {} steps".format(i, count, 100))
+    print("Total rewards is {} after {} steps".format(rewards, algo.num_steps))
+    print("Bandit {} is played {} times after {} steps".format(
+        i, count, algo.num_steps))
     print('')
 
     # Run 1000 times
-    rewards = algo.run(total_steps=900)
+    rewards = algo.run(num_steps=900)
     count, i = algo.recommend_bandit()
-    print("Total rewards is {} after {} steps".format(rewards, 1000))
-    print("Bandit {} is played {} times after {} steps".format(i, count, 1000))
+    print("Total rewards is {} after {} steps".format(rewards, algo.num_steps))
+    print("Bandit {} is played {} times after {} steps".format(
+        i, count, algo.num_steps))
     print('')
 
     # Run 10000 times
-    rewards = algo.run(total_steps=9000)
+    rewards = algo.run(num_steps=9000)
     count, i = algo.recommend_bandit()
-    print("Total rewards is {} after {} steps".format(rewards, 10000))
-    print("Bandit {} is played {} times after {} steps".format(i, count, 10000))
+    print("Total rewards is {} after {} steps".format(rewards, algo.num_steps))
+    print("Bandit {} is played {} times after {} steps".format(
+        i, count, algo.num_steps))
     print('')
