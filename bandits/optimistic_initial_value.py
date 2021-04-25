@@ -3,15 +3,15 @@ from bandits import SampleBandit
 
 class OptimisticInitialValue:
 
-    def __init__(self, bandits: list, initial_val=1):
+    def __init__(self, bandits: list, initial_val=1.0):
         """
-        Constructor for the epsilon-greedy algorithm
+        Constructor for the optimistic initial value algorithm
 
         :param bandits: A list of bandits to play
         :type bandits: list
 
-        :param epsilon: Exploration vs exploitation tradeoff parameter
-        :type epsilon: float
+        :param initial_val: The initial value estimate of sample mean for each bandit
+        :type initial_val: float
         """
         self.bandits = bandits
 
