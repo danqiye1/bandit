@@ -97,7 +97,7 @@ class NormalThompson:
         :param x: Update variable. This is often the reward value.
         :param k: Index of bandit to update
         """
-        precision = self.precision[k]
+        precision = self.precisions[k]
         self.precisions[k] += self.tau
         self.means[k] = 1/self.precisions[k] * (self.tau * x + self.means[k] * precision)
 
