@@ -1,5 +1,5 @@
 import random
-from bandits import SampleBandit
+from bandits import BernoulliBandit
 
 
 class EpsilonGreedy:
@@ -75,7 +75,7 @@ class EpsilonGreedy:
 
 if __name__ == "__main__":
     # Do a 3 bandit experiment
-    bandits = [SampleBandit(0.2), SampleBandit(0.6), SampleBandit(0.8)]
+    bandits = [BernoulliBandit(0.2), BernoulliBandit(0.6), BernoulliBandit(0.8)]
     algo = EpsilonGreedy(bandits)
 
     # Run 10 times

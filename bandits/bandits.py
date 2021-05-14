@@ -1,7 +1,7 @@
 import random
 
 
-class SampleBandit:
+class BernoulliBandit:
     """ A toy epsilon greedy bandit that rewards 1 if win and 0 if lose"""
 
     def __init__(self, win_rate=0.5):
