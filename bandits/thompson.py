@@ -1,5 +1,5 @@
 import numpy as np
-from bandits import SampleBandit
+from bandits import BernoulliBandit
 
 class ThompsonSampler:
 
