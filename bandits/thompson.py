@@ -1,11 +1,12 @@
 import numpy as np
 from bandits import BernoulliBandit
 
-class ThompsonSampler:
+class BernoulliThompson:
 
     def __init__(self, bandits: list):
         """
-        Constructor for Thompson Sampler
+        Constructor for Bernoulli Thompson Sampler.
+        This Thompson Sampler is used if we believe the bandits are drawing from Bernoulli distribution
 
         :param bandits: A list of bandits to play
         :type bandits: list
