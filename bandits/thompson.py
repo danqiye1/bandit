@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Do a 3 bandit experiment
     bandits = [BernoulliBandit(0.2), BernoulliBandit(0.6), BernoulliBandit(0.8)]
     K = len(bandits)
-    algo = ThompsonSampler(bandits)
+    algo = BernoulliThompson(bandits)
 
     # Run 10 times
     algo.run(num_steps=10)
