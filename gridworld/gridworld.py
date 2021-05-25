@@ -1,6 +1,6 @@
 class GridWorld:
     """ GridWorld is a deterministic 2D environment. """
-    def __init__(self, rewards=None, actions=None, state=(0,0)):
+    def __init__(self, rewards=None, actions=None):
         """ 
         Initialize the state-rewards mapping and the initial state of the agent 
         
@@ -13,7 +13,6 @@ class GridWorld:
         :param state: Initial state of the agent
         :type state: tuple
         """
-        self.state = state
 
         if rewards and actions:
             self.rewards = rewards
@@ -50,24 +49,29 @@ class GridWorld:
                 (2,2): ("up", "left", "right"),
             }
 
-    def record_move(self, action):
+    def move(self, state, action):
         """ Given an agent action, return the reward and update it's position/state """
-        allowed_actions = self.actions[self.state]
+        allowed_actions = self.actions[state]
 
         if action in allowed_actions:
             if action == "up":
-                self.state = (self.state[0] - 1, self.state[1])
+                s_prime = (state[0] - 1, state[1])
             elif action == "down":
-                self.state = (self.state[0] + 1, self.state[1])
+                s_prime = (state[0] + 1, state[1])
             elif action == "left":
-                self.state = (self.state[0], self.state[1] - 1)
+                s_prime = (state[0], state[1] - 1)
             elif action == "right":
-                self.state = (self.state[0], self.state[1] + 1)
+                s_prime = (state[0], state[1] + 1)
             
-            return self.rewards[self.state]
+            return (self.rewards[s_prime], s_prime)
         else:
-            return 0
+            return (0, state)
 
-    def is_terminal(self):
+    def is_terminal(self, state):
         """ Determine is agent is in terminal state """
-        return self.state not in self.actions
+        return state not in self.actions
+
+    def get_states(self):
+        """ Return a set of all possible states """
+        # In gridworld states are the keys of self.rewards
+        return self.rewards.keys()
