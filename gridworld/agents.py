@@ -1,6 +1,4 @@
 import numpy as np
-from gridworld import GridWorld
-from pdb import set_trace as bp
 
 class DynamicProgrammingAgent:
 
@@ -45,7 +43,6 @@ class DynamicProgrammingAgent:
 
                 for action in self.actions:
                     r , s_prime = env.move(state, action)
-                    print(s_prime, state)
                     if s_prime != state:
                         # A transition occurred. Set the transition probablility to 1
                         # In more complex environments this step should be replaced by a learning function
@@ -144,13 +141,3 @@ class DynamicProgrammingAgent:
             print(row)
 
         print(border)
-
-if __name__ == "__main__":
-    # Some rudimentary testing
-    env = GridWorld()
-    dp_agent = DynamicProgrammingAgent(env)
-    dp_agent.print_values()
-    dp_agent.evaluate_policy(env)
-    dp_agent.print_values()
-    dp_agent.print_policy()
-    
