@@ -4,7 +4,7 @@ from pdb import set_trace as bp
 
 class DynamicProgrammingAgent:
 
-    def __init__(self, env, delta=1e-3, gamma=0.9):
+    def __init__(self, env, delta=1e-3, gamma=0.9, transition_probs=None):
         """ 
         A dynamic programming agent for solving GridWorld 
         
@@ -33,23 +33,26 @@ class DynamicProgrammingAgent:
         # This is p(s_prime, r | s, a) in the Bellman Equation
         # Note that although p(s_prime, r | s, a) is distribution of environment parameters
         # it is the agent's responsibility to keep track of it
-        self.transition_prob = {}
-        self.rewards = {}
-        self.num_rows = 0
-        self.num_columns = 0
-        for state in env.get_states():
+        if not transition_probs:
+            self.transition_prob = {}
+            self.rewards = {}
+            self.num_rows = 0
+            self.num_columns = 0
+            for state in env.get_states():
 
-            self.num_rows = max(self.num_rows, state[0] + 1)
-            self.num_columns = max(self.num_columns, state[1] + 1)
+                self.num_rows = max(self.num_rows, state[0] + 1)
+                self.num_columns = max(self.num_columns, state[1] + 1)
 
-            for action in self.actions:
-                r , s_prime = env.move(state, action)
-                print(s_prime, state)
-                if s_prime != state:
-                    # A transition occurred. Set the transition probablility to 1
-                    # In more complex environments this step should be replaced by a learning function
-                    self.transition_prob[(s_prime, state, action)] = 1
-                    self.rewards[(s_prime, state, action)] = r
+                for action in self.actions:
+                    r , s_prime = env.move(state, action)
+                    print(s_prime, state)
+                    if s_prime != state:
+                        # A transition occurred. Set the transition probablility to 1
+                        # In more complex environments this step should be replaced by a learning function
+                        self.transition_prob[(s_prime, state, action)] = 1
+                        self.rewards[(s_prime, state, action)] = r
+        else:
+            self.transition_prob = transition_probs
     
 
         # Initialize a policy pie(a|s)
