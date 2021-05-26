@@ -51,7 +51,7 @@ class GridWorld:
 
     def move(self, state, action):
         """ Given an agent action, return the reward and update it's position/state """
-        allowed_actions = self.actions[state]
+        allowed_actions = self.actions.get(state, ())
 
         if action in allowed_actions:
             if action == "up":
