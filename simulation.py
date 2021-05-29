@@ -5,7 +5,7 @@ def main():
 
 def deterministic_simulation():
     # Some rudimentary testing
-    env = gridworld.GridWorld()
+    env = gridworld.create_standard_grid()
     dp_agent = agents.DynamicProgrammingAgent(env)
 
     print("Initial values and policy:")
