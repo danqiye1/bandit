@@ -99,7 +99,37 @@ class DynamicProgrammingAgent:
             
             # Break when converged
             if max_change <= self.delta:
-                print(max_change)
+                break
+
+    def iterate_policy(self, env):
+        """ Perform policy iteration using dynamic programming """
+        while True:
+            converged = True # Tracks if policy has converged
+            self.evaluate_policy(env)
+            
+            for s in env.get_states():
+                if s in self.policy:
+                    old_action = self.policy[s]
+                    new_action = None
+                    best_value = float('-inf')
+
+                    # Loop through all possible actions in action space to find the best action
+                    # This is like a complicated argmax
+                    for a in self.actions:
+                        v = 0
+                        for s_prime in env.get_states():
+                            r = self.rewards.get((s_prime, s, a), 0)
+                            v += self.transition_prob.get((s_prime, s, a), 0) * (r + self.gamma * self.V[s_prime])
+
+                        if v > best_value:
+                            best_value = v
+                            new_action = a
+
+                    self.policy[s] = new_action
+                    if new_action != old_action:
+                        converged = False
+
+            if converged:
                 break
 
     def print_values(self):
