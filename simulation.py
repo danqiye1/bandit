@@ -8,6 +8,22 @@ def deterministic_simulation():
     env = gridworld.create_standard_grid()
     dp_agent = agents.DynamicProgrammingAgent(env)
 
+    print("Running simulation on deterministic standard gridworld.")
+    print("Initial values and policy:")
+    dp_agent.evaluate_policy(env)
+    dp_agent.print_values()
+    dp_agent.print_policy()
+    print("")
+
+    print("Optimised policy:")
+    dp_agent.iterate_policy(env)
+    dp_agent.print_values()
+    dp_agent.print_policy()
+    print("")
+
+    env = gridworld.create_costly_grid()
+    dp_agent = agents.DynamicProgrammingAgent(env)
+    print("Running simulation on costly gridworld")
     print("Initial values and policy:")
     dp_agent.evaluate_policy(env)
     dp_agent.print_values()

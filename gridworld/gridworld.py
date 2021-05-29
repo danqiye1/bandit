@@ -76,3 +76,17 @@ def create_standard_grid():
     env = GridWorld(rewards, actions)
 
     return env
+
+def create_costly_grid(cost=-0.1):
+    """ 
+    Create a costly 4 x 3 grid world with terminal states (2,3), (1,3)
+    The transitions to the terminal states yield 1 and -1 rewards respectively.
+    State (1,1) is inaccessible.
+    Every step taken will cost a negative reward
+    """
+    env = create_standard_grid()
+    for s in env.rewards:
+        if not env.is_terminal(s):
+            env.rewards[s] = cost
+
+    return env
