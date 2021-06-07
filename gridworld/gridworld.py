@@ -43,6 +43,10 @@ class GridWorld:
         # In gridworld states are the keys of self.rewards
         return self.rewards.keys()
 
+    def get_actions(self, state):
+        """ Get the valid actions given a state """
+        return self.actions.get(state, ())
+
 def create_standard_grid():
     """ 
     Create a standard 4 x 3 grid world with terminal states (2,3), (1,3)

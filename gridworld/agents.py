@@ -195,20 +195,29 @@ class MonteCarloAgent:
                 (2,2): "right",
             }
 
+        self.action_space = ["up", "down", "left", "right"]
+
+        # Record num_rows and num_columns for printing values and policy
         self.num_rows = 0
         self.num_columns = 0
 
         # Initialize value function
         self.V = {}
         self.ret = {}
+        self.Q = {}
+        self.retQ = {}
         for s in env.get_states():
             self.num_rows = max(self.num_rows, s[0] + 1)
             self.num_columns = max(self.num_columns, s[1] + 1)
 
-            if not env.is_terminal(s):
-                self.ret[s] = []
-            else:
-                self.V[s] = 0
+            for a in self.action_space:
+                if not env.is_terminal(s):
+                    self.ret[s] = []
+                    self.retQ[(s,a)] = []
+                else:
+                    self.V[s] = 0
+                    self.Q[(s,a)] = 0           
+
 
     def play(self, env, max_steps=20):
         # Randomly initialize the start state
@@ -216,6 +225,7 @@ class MonteCarloAgent:
         s = list(env.get_states())[s_idx]
         states = [s]
         rewards = [0]
+        actions = []
         steps = 0
         
         while not env.is_terminal(s) and (steps < max_steps):
@@ -224,9 +234,10 @@ class MonteCarloAgent:
             # Move the agent and obtain a reward
             r, s_prime = env.move(s, action)
 
-            # Record the states and rewards
+            # Record the states, rewards, and actions of the episode
             states.append(s_prime)
             rewards.append(r)
+            actions.append(action)
 
             # Update state
             s = s_prime
@@ -234,12 +245,12 @@ class MonteCarloAgent:
             # Increment steps
             steps += 1
 
-        return states, rewards
+        return states, rewards, actions
 
     def evaluate_policy(self, env, num_episodes=100):
         for _ in range(num_episodes):
             # Play one episode of the game
-            states, rewards = self.play(env)
+            states, rewards, _  = self.play(env)
             G = 0
             for t in range(len(states) - 2, -1, -1):
                 s = states[t]
