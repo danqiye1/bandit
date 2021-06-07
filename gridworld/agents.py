@@ -219,7 +219,19 @@ class MonteCarloAgent:
                     self.Q[(s,a)] = 0           
 
 
-    def play(self, env, max_steps=20):
+    def play(self, env, max_steps=20, explore_start=False):
+        """
+        Play an episode of max_steps in environment. 
+        If explore_start is True, the first action is random and not according to self.policy
+
+        :param env: environment for agent to interact with
+
+        :param max_steps: maximum number of steps for this episode.
+        :type max_steps: int
+
+        :param explore_start: Parameter to choose if we are doing exploration start, where first action is not according to self.policy
+        :type explore_start: bool
+        """
         # Randomly initialize the start state
         s_idx = np.random.choice(len(env.get_states()))
         s = list(env.get_states())[s_idx]
@@ -229,8 +241,14 @@ class MonteCarloAgent:
         steps = 0
         
         while not env.is_terminal(s) and (steps < max_steps):
-            # Sample pi(a|s) to get a valid action
-            action = self.policy[s]
+
+            if steps == 0 and explore_start:
+                # Exploration start
+                action = np.random.choice(self.action_space)
+            else:
+                # Sample pi(a|s) to get a valid action
+                action = self.policy[s]
+
             # Move the agent and obtain a reward
             r, s_prime = env.move(s, action)
 
@@ -257,9 +275,35 @@ class MonteCarloAgent:
                 r = rewards[t+1]
                 G = r + self.gamma * G
 
-                # Implementa a every-visit monte-carlo
+                # Implement a every-visit monte-carlo
                 self.ret[s].append(G)
                 self.V[s] = np.mean(self.ret[s])
+
+    def iterate_policy_es(self, env, num_episodes=100):
+        """ 
+        Monte Carlo Policy Iteration algorithm with exploring starts.
+        Randomly select an initial state and action to start, and follow self.policy after.
+        """
+        for _ in range(num_episodes):
+            # Play one episode of the game
+            states, rewards, actions = self.play(env, explore_start=True)
+            G = 0
+            for t in range(len(states) - 2, -1, -1):
+                s = states[t]
+                r = rewards[t+1]
+                a = actions[t]
+
+                G = r + self.gamma * G
+
+                # Implement every-visit monte-carlo
+                self.retQ[(s,a)].append(G)
+                self.Q[(s,a)] = np.mean(self.retQ[(s,a)])
+
+                # Update the best action to our policy
+                Q = []
+                for action in self.action_space:
+                    Q.append(self.Q.get((s,action), float('-inf')))
+                self.policy[s] = self.action_space[np.argmax(Q)]
 
     def print_values(self):
         """ Print the current values of states in gridworld """
