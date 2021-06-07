@@ -305,6 +305,37 @@ class MonteCarloAgent:
                     Q.append(self.Q.get((s,action), float('-inf')))
                 self.policy[s] = self.action_space[np.argmax(Q)]
 
+    def iterate_policy(self, env, epsilon=0.1, num_episodes=1000):
+        """
+        Monte Carlo policy iteration without exploring starts
+        """
+        for _ in range(num_episodes):
+            # Play one episode of the game
+            states, rewards, actions = self.play(env)
+            G = 0
+            for t in range(len(states) - 2, -1, -1):
+                s = states[t]
+                r = rewards[t+1]
+                a = actions[t]
+
+                G = r + self.gamma * G
+
+                # Implement every-visit monte-carlo
+                self.retQ[(s,a)].append(G)
+                self.Q[(s,a)] = np.mean(self.retQ[(s,a)])
+
+                # Update the policy based on epsilon greedy
+                p = np.random.random()
+                if p < epsilon:
+                    # Return random action
+                    self.policy[s] = np.random.choice(self.action_space)
+                else:
+                    # Return best action
+                    Q = []
+                    for action in self.action_space:
+                        Q.append(self.Q.get((s,action), float('-inf')))
+                    self.policy[s] = self.action_space[np.argmax(Q)]
+
     def print_values(self):
         """ Print the current values of states in gridworld """
         border = "-"

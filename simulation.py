@@ -56,6 +56,15 @@ def monte_carlo_simulation():
     mc_agent.print_values()
     print("")
 
+    print("Optimizing Policy with Epsilon Greedy:")
+    # Reinitialize agent
+    mc_agent = agents.MonteCarloAgent(env)
+    mc_agent.iterate_policy(env)
+    mc_agent.print_policy()
+    mc_agent.evaluate_policy(env)
+    mc_agent.print_values()
+    print("")
+
 if __name__ == "__main__":
     main()
 
