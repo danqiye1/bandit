@@ -374,3 +374,107 @@ class MonteCarloAgent:
             print(row)
 
         print(border)
+
+class TemporalDifferenceAgent:
+
+    def __init__(self, env, start_state=(0,0), initial_policy=None):
+        
+        if initial_policy:
+            self.policy = initial_policy
+        else:
+            # Define a random policy if policy is not given
+            self.policy = {
+                (0,0): "down",
+                (0,1): "left",
+                (0,2): "right",
+                (0,3): "left",
+                (1,0): "down",
+                (1,2): "up",
+                (2,0): "right",
+                (2,1): "right",
+                (2,2): "right",
+            }
+
+        # Initialize V
+        self.num_rows = 0
+        self.num_columns = 0
+        self.V = {}
+        for s in env.get_states():
+            self.num_rows = max(self.num_rows, s[0] + 1)
+            self.num_columns = max(self.num_columns, s[1] + 1)
+            self.V[s] = 0
+
+        # Initialize state of agent
+        self.start_state = start_state
+        
+    def evaluate_policy(self, env, delta=1e-3, alpha=0.1, gamma=0.9):
+        """ 
+        TD Prediction Code: Learns value function by traversing Gridworld
+        
+        :param env: Gridworld environment
+        :param delta: Difference in V for convergence
+        :param alpha: learning rate of TD Prediction.
+
+        :return deltas: list of differences to track convergence
+        """
+        # List of deltas to track convergence
+        deltas = []
+
+        while True:
+            s = self.start_state
+            diff = 0
+            while not env.is_terminal(s):
+                a = self.policy[s]
+                r, s_prime = env.move(s, a)
+
+                # Update V
+                old_v = self.V[s]
+                self.V[s] = self.V[s] + alpha * (r + gamma * self.V[s_prime] - self.V[s])
+                diff = max(diff, np.abs(self.V[s] - old_v))
+                s = s_prime
+                
+            deltas.append(diff)
+            # Converged
+            if diff < delta:
+                break
+
+        return deltas
+
+    def print_values(self):
+        """ Print the current values of states in gridworld """
+        border = "-"
+        for j in range(self.num_columns):
+            border += "-------"
+        print(border)
+
+        for i in range(self.num_rows):
+            row = "| "
+            for j in range(self.num_columns):
+                row += "%.2f" % self.V[(i,j)] + " | "
+            print(row)
+
+        print(border)
+
+    def print_policy(self):
+        """ Print the current policy for this agent on gridworld """
+        border = "-"
+        for j in range(self.num_columns):
+            border += "----"
+        print(border)
+
+        # Map for consistent spacing during print
+        actions_map = {
+            "": " ",
+            "up": "U",
+            "down": "D",
+            "left": "L",
+            "right": "R"
+        }
+
+        for i in range(self.num_rows):
+            row = "| "
+            for j in range(self.num_columns):
+                row += actions_map[self.policy.get((i,j), "")] + " | "
+            print(row)
+
+        print(border)

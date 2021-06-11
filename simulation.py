@@ -1,8 +1,10 @@
 from gridworld import gridworld, agents
+import matplotlib.pyplot as plt
 
 def main():
     deterministic_simulation()
     monte_carlo_simulation()
+    td_simulation()
 
 def deterministic_simulation():
     # Some rudimentary testing
@@ -64,6 +66,22 @@ def monte_carlo_simulation():
     mc_agent.evaluate_policy(env)
     mc_agent.print_values()
     print("")
+
+def td_simulation():
+    # Run temporal difference simulation
+    env = gridworld.create_standard_grid()
+    td_agent = agents.TemporalDifferenceAgent(env)
+
+    print("Running temporal difference simulation on deterministic standard gridworld.")
+    print("Initial values and policy:")
+    deltas = td_agent.evaluate_policy(env)
+    td_agent.print_values()
+    td_agent.print_policy()
+    print("")
+
+    plt.plot(deltas)
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
