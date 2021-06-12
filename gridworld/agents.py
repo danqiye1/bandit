@@ -377,7 +377,7 @@ class MonteCarloAgent:
 
 class TemporalDifferenceAgent:
 
-    def __init__(self, env, start_state=(0,0), initial_policy=None):
+    def __init__(self, env, start_state=(0,0), initial_policy=None, action_space=None):
         
         if initial_policy:
             self.policy = initial_policy
@@ -395,19 +395,28 @@ class TemporalDifferenceAgent:
                 (2,2): "right",
             }
 
-        # Initialize V
+        # Initialize action_space
+        if action_space:
+            self.action_space = action_space
+        else:
+            self.action_space = ["up", "down", "left", "right"]
+
+        # Initialize V(s) and Q(s,a)
         self.num_rows = 0
         self.num_columns = 0
         self.V = {}
+        self.Q = {}
         for s in env.get_states():
             self.num_rows = max(self.num_rows, s[0] + 1)
             self.num_columns = max(self.num_columns, s[1] + 1)
             self.V[s] = 0
+            for a in self.action_space:
+                self.Q[(s,a)] = np.random.random()
 
         # Initialize state of agent
         self.start_state = start_state
         
-    def evaluate_policy(self, env, delta=1e-3, alpha=0.1, gamma=0.9):
+    def evaluate_policy(self, env, delta=1e-9, alpha=0.1, gamma=0.9):
         """ 
         TD Prediction Code: Learns value function by traversing Gridworld
         
@@ -439,6 +448,74 @@ class TemporalDifferenceAgent:
                 break
 
         return deltas
+
+    def iterate_policy(self, env, algo='sarsa', delta=1e-3, alpha=0.1, gamma=0.9, epsilon=0.1):
+        """
+        Policy iteration implementation with both SARSA and Q Learning
+
+        :param env: Gridworld environment
+        :param algo: The algorithm to use. Can either be sarsa or q_learning
+        :param delta: Threshold for convergence
+        :param alpha: Learning rate
+        :param gamma: Bellman equation discount factor
+        :param epsilon: Probablity of choosing a random action
+        """
+        # List of deltas to track convergence
+        deltas = []
+
+        while True:
+            s = self.start_state
+            diff = 0
+            while not env.is_terminal(s):
+                a = self._select_action(s, epsilon)
+                r, s_prime = env.move(s, a)
+
+                # Update Q(s,a)
+                old_Q = self.Q[(s,a)]
+                if algo == 'sarsa':
+                    a_prime = self._select_action(s_prime, epsilon)
+                    self.Q[(s,a)] = old_Q + alpha * (r + gamma * self.Q[(s_prime, a_prime)] - old_Q)
+                elif algo == 'q_learning':
+                    Q = []
+                    for action in self.action_space:
+                        Q.append(self.Q.get((s_prime ,action), float('-inf')))
+                    self.Q[(s,a)] = old_Q + alpha * (r + gamma * max(Q) - old_Q)
+                else:
+                    raise RuntimeError("Invalid Algorithm {} chosen".format(algo))
+                diff = max(diff, np.abs(self.Q[(s,a)] - old_Q))
+
+                s = s_prime
+
+            deltas.append(diff)
+            if diff < delta:
+                # Converged
+                break
+
+        # Update optimal policy
+        for s in env.get_states():
+            if not env.is_terminal(s):
+                Q = []
+                for action in self.action_space:
+                    Q.append(self.Q.get((s ,action), float('-inf')))
+                self.policy[s] = self.action_space[np.argmax(Q)]
+                self.V[s] = max(Q)
+
+        return deltas
+
+    def _select_action(self, state, epsilon):
+        """ Select the next action from Q(s,a) using epsilon greedy algorithm """
+        p = np.random.random()
+        if p < epsilon:
+            # Return a random action
+            a = np.random.choice(self.action_space)
+        else:
+            # Return best action
+            Q = []
+            for action in self.action_space:
+                Q.append(self.Q.get((state,action), float('-inf')))
+            a = self.action_space[np.argmax(Q)]
+
+        return a
 
     def print_values(self):
         """ Print the current values of states in gridworld """

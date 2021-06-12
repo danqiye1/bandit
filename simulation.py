@@ -82,6 +82,25 @@ def td_simulation():
     plt.plot(deltas)
     plt.show()
 
+    print("Optimizing Policy with SARSA:")
+    deltas = td_agent.iterate_policy(env, algo='sarsa')
+    td_agent.print_policy()
+    td_agent.print_values()
+    print("")
+
+    plt.plot(deltas)
+    plt.show()
+
+    print("Optimizing Policy with Q-Learning:")
+    # Reinitialize agent
+    td_agent = agents.TemporalDifferenceAgent(env)
+    deltas = td_agent.iterate_policy(env, algo='q_learning')
+    td_agent.print_policy()
+    td_agent.print_values()
+    print("")
+
+    plt.plot(deltas)
+    plt.show()
 
 if __name__ == "__main__":
     main()
