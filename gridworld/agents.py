@@ -595,6 +595,12 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
         # This helps to build a linear regression model of dot(W, phi(x))
         self.W = None
 
+        # Initialize V[s]
+        self.V = {}
+        for s in env.get_states():
+            if not env.is_terminal(s):
+                self.V[s] = 0
+
     def explore(self, env, num_episodes=10000):
         """ 
         Function for agent to randomly explore the gridworld and collect samples for estimating Q(s,a).
@@ -647,6 +653,13 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
             if max_diff < delta:
                 # converged
                 break
+
+        # Update optimal policy and value function
+        for s in env.get_states():
+            if not env.is_terminal(s):
+                Q_values = self.predict(s)
+                self.policy[s] = self.action_space[np.argmax(Q_values)]
+                self.V[s] = np.max(Q_values)
 
         return deltas
 
