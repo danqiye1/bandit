@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.kernel_approximation import RBFSampler
 
 class DynamicProgrammingAgent:
 
@@ -555,3 +556,126 @@ class TemporalDifferenceAgent:
             print(row)
 
         print(border)
+
+class ApproximateTDAgent(TemporalDifferenceAgent):
+    """ An agent that implements the function approximation Q-learning algorithm """
+
+    def __init__(self, env, start_state=(0,0), initial_policy=None, action_space=None):
+
+        if initial_policy:
+            self.policy = initial_policy
+        else:
+            # Define a random policy if policy is not given
+            self.policy = {
+                (0,0): "down",
+                (0,1): "left",
+                (0,2): "right",
+                (0,3): "left",
+                (1,0): "down",
+                (1,2): "up",
+                (2,0): "right",
+                (2,1): "right",
+                (2,2): "right",
+            }
+
+        # Initialize action_space
+        if action_space:
+            self.action_space = action_space
+        else:
+            self.action_space = ["up", "down", "left", "right"]
+
+        # Initialize state of agent
+        self.start_state = start_state
+
+        # Initialize featurizer function phi(x)
+        self.featurizer = RBFSampler()
+
+        # Placeholder of weights for linear regression model
+        # Use explore() method to populate W with the right dimensions of a fitted featurizer
+        # This helps to build a linear regression model of dot(W, phi(x))
+        self.W = None
+
+    def explore(self, env, num_episodes=10000):
+        """ 
+        Function for agent to randomly explore the gridworld and collect samples for estimating Q(s,a).
+        The more num_episodes, the more data is collected for better estimates.
+        """
+        samples = []
+        for _ in range(num_episodes):
+            s = self.start_state
+            while not env.is_terminal(s):
+                # Play the game randomly
+                a = np.random.choice(self.action_space)
+                x = self._vectorize(s,a)
+                samples.append(x)
+                _, s_prime = env.move(s,a)
+                s = s_prime
+
+        # Fit the RBF featurizer and initialize weights
+        self.featurizer.fit(samples)
+        self.W = np.zeros(self.featurizer.n_components)
+
+    def _vectorize(self, s, a):
+        """ Helper function to vectorize state s and action a """
+        s = np.array(s)
+        # One-hot encoding of actions
+        a_idx = self.action_space.index(a)
+        a = np.zeros(len(self.action_space))
+        a[a_idx] = 1
+        return np.concatenate((s,a))
+
+    def iterate_policy(self, env, delta=1e-3, alpha=0.1, gamma=0.9, epsilon=0.3):
+
+        deltas = []
+        while True:
+            max_diff = float("-inf")
+            s = self.start_state
+            while not env.is_terminal(s):
+                a = self._select_action(s, epsilon)
+                s_prime, r = env.move(s, a)
+                if env.is_terminal(s_prime):
+                    y = r
+                else:
+                    y = r + gamma * np.max(self.predict(s_prime))
+                phi_x = self.featurizer.transform(self._vectorize(s, a))
+                diff = y - np.dot(self.W, phi_x)
+                self.W = self.W + alpha * diff * phi_x
+                max_diff = max(max_diff, diff)
+                s = s_prime
+
+            deltas.append(max_diff)
+            if max_diff < delta:
+                # converged
+                break
+
+        return deltas
+
+    def _select_action(self, state, epsilon):
+        """ 
+        Helper function to choose between the explore-exploit dilemma 
+        This is actually the pi(a|s) function
+        """
+        p = np.random.random()
+        if p <= epsilon:
+            selected_action = np.random.choice(self.action_space)
+        else:
+            Q_values = self.predict(state)
+            selected_action = self.action_space[np.argmax(Q_values)]
+        
+        return selected_action
+
+    def predict(self, state):
+        """
+        Predict the Q values for all actions of input state
+
+        :param state: state for which Q is predicted
+        """
+        # Calculate estimate of Q from dot(W, phi(x))
+        # This is a linear regression model
+        Q_values = []
+        for action in self.action_space:
+            x = self._vectorize(state, action)
+            x = self.featurizer.transform(x)
+            Q_values.append(np.dot(self.W, x))
+
+        return Q_values
