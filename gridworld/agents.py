@@ -450,7 +450,7 @@ class TemporalDifferenceAgent:
 
         return deltas
 
-    def iterate_policy(self, env, algo='sarsa', delta=1e-3, alpha=0.1, gamma=0.9, epsilon=0.1):
+    def iterate_policy(self, env, algo='sarsa', alpha=0.1, gamma=0.9, epsilon=0.1, num_episodes=10000):
         """
         Policy iteration implementation with both SARSA and Q Learning
 
@@ -464,10 +464,11 @@ class TemporalDifferenceAgent:
         # List of deltas to track convergence
         deltas = []
 
-        while True:
+        for n in range(num_episodes):
             s = self.start_state
             diff = 0
             while not env.is_terminal(s):
+                print("Running temporal difference episode: {}".format(n))
                 a = self._select_action(s, epsilon)
                 r, s_prime = env.move(s, a)
 
@@ -488,9 +489,6 @@ class TemporalDifferenceAgent:
                 s = s_prime
 
             deltas.append(diff)
-            if diff < delta:
-                # Converged
-                break
 
         # Update optimal policy
         for s in env.get_states():
@@ -610,7 +608,8 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
         The more num_episodes, the more data is collected for better estimates.
         """
         samples = []
-        for _ in range(num_episodes):
+        for n in range(num_episodes):
+            print("Running initial exploration episode: {}".format(n))
             s = self.start_state
             while not env.is_terminal(s):
                 # Play the game randomly
@@ -637,7 +636,7 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
 
         deltas = []
         for n in range(num_episodes):
-            print("Running episode: {}".format(n))
+            print("Running policy iteration episode: {}".format(n))
             max_diff = float("-inf")
             s = self.start_state
             while not env.is_terminal(s):
