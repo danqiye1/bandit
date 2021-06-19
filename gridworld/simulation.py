@@ -1,4 +1,4 @@
-from gridworld import gridworld, agents
+import gridworld, agents
 import matplotlib.pyplot as plt
 
 def main():
