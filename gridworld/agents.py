@@ -597,9 +597,12 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
 
         # Initialize V[s]
         self.V = {}
+        self.num_rows = 0
+        self.num_columns = 0
         for s in env.get_states():
-            if not env.is_terminal(s):
-                self.V[s] = 0
+            self.num_rows = max(self.num_rows, s[0] + 1)
+            self.num_columns = max(self.num_columns, s[1] + 1)
+            self.V[s] = 0
 
     def explore(self, env, num_episodes=10000):
         """ 
@@ -630,29 +633,27 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
         a[a_idx] = 1
         return np.concatenate((s,a))
 
-    def iterate_policy(self, env, delta=1e-3, alpha=0.1, gamma=0.9, epsilon=0.3):
+    def iterate_policy(self, env, alpha=0.1, gamma=0.9, epsilon=0.3, num_episodes=1000):
 
         deltas = []
-        while True:
+        for n in range(num_episodes):
+            print("Running episode: {}".format(n))
             max_diff = float("-inf")
             s = self.start_state
             while not env.is_terminal(s):
                 a = self._select_action(s, epsilon)
-                s_prime, r = env.move(s, a)
+                r, s_prime = env.move(s, a)
                 if env.is_terminal(s_prime):
                     y = r
                 else:
                     y = r + gamma * np.max(self.predict(s_prime))
-                phi_x = self.featurizer.transform(self._vectorize(s, a))
+                phi_x = self.featurizer.transform([self._vectorize(s, a)])[0]
                 diff = y - np.dot(self.W, phi_x)
                 self.W = self.W + alpha * diff * phi_x
                 max_diff = max(max_diff, diff)
                 s = s_prime
 
             deltas.append(max_diff)
-            if max_diff < delta:
-                # converged
-                break
 
         # Update optimal policy and value function
         for s in env.get_states():
@@ -688,7 +689,7 @@ class ApproximateTDAgent(TemporalDifferenceAgent):
         Q_values = []
         for action in self.action_space:
             x = self._vectorize(state, action)
-            x = self.featurizer.transform(x)
+            x = self.featurizer.transform([x])[0]
             Q_values.append(np.dot(self.W, x))
 
         return Q_values

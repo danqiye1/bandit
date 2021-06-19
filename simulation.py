@@ -5,6 +5,7 @@ def main():
     deterministic_simulation()
     monte_carlo_simulation()
     td_simulation()
+    approximation_simulation()
 
 def deterministic_simulation():
     # Some rudimentary testing
@@ -95,6 +96,23 @@ def td_simulation():
     # Reinitialize agent
     td_agent = agents.TemporalDifferenceAgent(env)
     deltas = td_agent.iterate_policy(env, algo='q_learning')
+    td_agent.print_policy()
+    td_agent.print_values()
+    print("")
+
+    plt.plot(deltas)
+    plt.show()
+
+def approximation_simulation():
+    # Run temporal difference simulation
+    env = gridworld.create_standard_grid()
+    td_agent = agents.ApproximateTDAgent(env)
+
+    print("Running approximate Q learning simulation on deterministic standard gridworld.")
+    print("Optimizing Policy with Q-Learning:")
+    # Explore gridworld to bootstrap W
+    td_agent.explore(env)
+    deltas = td_agent.iterate_policy(env)
     td_agent.print_policy()
     td_agent.print_values()
     print("")
