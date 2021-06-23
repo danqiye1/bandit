@@ -4,7 +4,7 @@ from agents import ApproximateTDAgent
 from pdb import set_trace as bp
 
 def main():
-    env = gym.make("CartPole-v0")
+    env = gym.make("CartPole-v1")
     agent = ApproximateTDAgent(env)
     deltas = agent.iterate_policy()
     plt.plot(deltas)
