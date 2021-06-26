@@ -1,6 +1,6 @@
 import gym
 import matplotlib.pyplot as plt
-from agents import ApproximateTDAgent
+from cartpole.agents import ApproximateTDAgent
 from pdb import set_trace as bp
 
 def main():
